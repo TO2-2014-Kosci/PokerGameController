@@ -69,12 +69,19 @@ public class PokerGameController extends GameController {
     }
 
     private Response leaveGame(String playerName) {
-        if (observers.contains(playerName)) {
+        if (!observers.contains(playerName)) {
+            return new Response(Response.Type.FAILURE, ControllerMessage.NO_SUCH_JOINED_OBSERVER.toString());
+        }
+        else if (state.isPlayerWithName(playerName)) {
+            return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_IS_IN_GAME.toString());
+        }
+        else {
             observers.remove(playerName);
+
+            //TODO check if the room is empty, wait some time and ask server for destruction
+
             return new Response(Response.Type.SUCCESS);
         }
-        else
-            return new Response(Response.Type.FAILURE, ControllerMessage.NO_SUCH_JOINED_OBSERVER.toString());
     }
 
     private Response sitDown(String playerName) {
@@ -92,6 +99,8 @@ public class PokerGameController extends GameController {
         }
         else {
             state.addPlayer(new Player(playerName, false, settings.getDiceNumber()));
+
+            //TODO check if there are all players, wait some tima and start game
 
             server.sendToAll(this, state);
             return new Response(Response.Type.SUCCESS);
