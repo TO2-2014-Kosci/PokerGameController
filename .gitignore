@@ -1,4 +1,4 @@
 # Created by .gitignore support plugin (hsz.mobi)
 *.iml
 *.db
-*.vpp
+*.vpp~*
