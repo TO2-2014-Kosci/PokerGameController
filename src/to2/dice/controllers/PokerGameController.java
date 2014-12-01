@@ -1,10 +1,8 @@
 package to2.dice.controllers;
 
-import to2.dice.game.GameInfo;
-import to2.dice.game.GameSettings;
-import to2.dice.game.GameState;
-import to2.dice.game.Player;
+import to2.dice.game.*;
 import to2.dice.messaging.GameAction;
+import to2.dice.messaging.GameActionType;
 import to2.dice.messaging.RerollAction;
 import to2.dice.messaging.Response;
 import to2.dice.server.GameServer;
@@ -12,11 +10,15 @@ import to2.dice.server.GameServer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Thread.sleep;
+
 
 public class PokerGameController extends GameController {
 
     private GameState state;
     private List<String> observers = new ArrayList<String>();
+
+    // TODO Map<Player, NumberOfAbsences>
 
     public PokerGameController(GameServer server, GameSettings settings, String creator) {
         super(server, settings, creator);
@@ -30,8 +32,12 @@ public class PokerGameController extends GameController {
         return new GameInfo(settings, state);
     }
 
+    GameState getGameState() {
+        return state;
+    }
+
     @Override
-    public Response handleGameAction(GameAction gameAction) {
+    public synchronized Response handleGameAction(GameAction gameAction) {
         Response response = null;
         switch (gameAction.getType()) {
             case JOIN_GAME:
@@ -109,11 +115,66 @@ public class PokerGameController extends GameController {
 
 
     private Response standUp(String playerName) {
+
         return null;
     }
 
     private Response reroll(String playerName, boolean[] chosenDices) {
+
+
+
         return null;
+    }
+
+
+
+    private void nextPlayer() {
+
+
+
+
+        server.sendToAll(this, state);
+    }
+
+    private class Timer implements Runnable {
+
+        private Player player;
+
+        public Timer(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public void run() {
+            boolean[] chosenDice;
+            if(player.isBot()) {
+                /* make bot move */
+                Dice dice = player.getDice();
+                List<Dice> otherDices = new ArrayList<Dice>();
+                for (Player p : state.getPlayers()) {
+                    if (p != player) otherDices.add(p.getDice());
+                }
+                chosenDice = new boolean[settings.getDiceNumber()]; // temporary: bot does nothing
+                //    TODO  choosenDice = bot.makemove()
+
+                RerollAction rerollAction = new RerollAction(GameActionType.REROLL, player.getName(), chosenDice);
+                handleGameAction(rerollAction);
+            }
+            else {
+                /* sleep max time, that player can wait and then reroll nothing */
+                int startRound = state.getCurrentRound();
+                try {
+                    sleep(settings.getTimeForMove());
+                } catch (InterruptedException e) { }
+
+                if(state.getCurrentRound() == startRound) {
+                    // TODO increment player absence number
+                    chosenDice = new boolean[settings.getDiceNumber()];
+                    RerollAction rerollAction = new RerollAction(GameActionType.REROLL, player.getName(), chosenDice);
+                    handleGameAction(rerollAction);
+                }
+            }
+        }
     }
 
 }
