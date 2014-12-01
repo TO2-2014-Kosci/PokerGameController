@@ -15,8 +15,10 @@ import static java.lang.Thread.sleep;
 
 public class PokerGameController extends GameController {
 
+    //TODO synchronize GameState
     private GameState state;
     private List<String> observers = new ArrayList<String>();
+    private int currentTurn=0;
 
     // TODO Map<Player, NumberOfAbsences>
 
@@ -106,7 +108,9 @@ public class PokerGameController extends GameController {
         else {
             state.addPlayer(new Player(playerName, false, settings.getDiceNumber()));
 
-            //TODO check if there are all players, wait some tima and start game
+            if (state.getPlayers().size() == settings.getMaxHumanPlayers()) {
+                startGame();
+            }
 
             server.sendToAll(this, state);
             return new Response(Response.Type.SUCCESS);
@@ -123,10 +127,23 @@ public class PokerGameController extends GameController {
 
 
 
+        nextPlayer();
         return null;
     }
 
+    private void startGame() {
+        state.setGameStarted(true);
+        state.setCurrentRound(1);
+        state.setCurrentPlayer(state.getPlayers().get(0));
 
+        for (Player player : state.getPlayers()) {
+
+        }
+        currentTurn = 2;
+        server.sendToAll(this, state);
+        Timer timer = new Timer(state.getCurrentPlayer());
+        (new Thread(timer)).start();
+    }
 
     private void nextPlayer() {
 
@@ -162,16 +179,16 @@ public class PokerGameController extends GameController {
             }
             else {
                 /* sleep max time, that player can wait and then reroll nothing */
-                int startRound = state.getCurrentRound();
+                int startTurn = currentTurn;
                 try {
                     sleep(settings.getTimeForMove());
                 } catch (InterruptedException e) { }
 
-                if(state.getCurrentRound() == startRound) {
-                    // TODO increment player absence number
+                if(currentTurn == startTurn) {
                     chosenDice = new boolean[settings.getDiceNumber()];
                     RerollAction rerollAction = new RerollAction(GameActionType.REROLL, player.getName(), chosenDice);
-                    handleGameAction(rerollAction);
+                    Response response = handleGameAction(rerollAction);
+                    // TODO if SUCCESS increment player absence number
                 }
             }
         }
