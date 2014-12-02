@@ -1,32 +1,33 @@
 package to2.dice.controllers;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import to2.dice.ai.Bot;
+import to2.dice.ai.BotFactory;
+import to2.dice.controllers.poker.MoveTimer;
 import to2.dice.game.*;
 import to2.dice.messaging.GameAction;
-import to2.dice.messaging.GameActionType;
 import to2.dice.messaging.RerollAction;
 import to2.dice.messaging.Response;
 import to2.dice.server.GameServer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import static java.lang.Thread.sleep;
+import java.util.Map;
 
 
 public class PokerGameController extends GameController {
 
     //TODO synchronize GameState
-    private GameState state;
-    private List<String> observers = new ArrayList<String>();
-    private int currentTurn=0;
 
-    // TODO Map<Player, NumberOfAbsences>
+    private List<String> observers = new ArrayList<String>();
+    private Map<Player, Integer> numberOfAbsences = new HashMap<Player, Integer>();
+    private Map<Player, Bot> bots = new HashMap<Player, Bot>();
+    private int currentTurn=0;
 
     public PokerGameController(GameServer server, GameSettings settings, String creator) {
         super(server, settings, creator);
-        state = new GameState();
-
-        joinGame(creator);
+        joinRoom(creator);
     }
 
     @Override
@@ -34,20 +35,17 @@ public class PokerGameController extends GameController {
         return new GameInfo(settings, state);
     }
 
-    GameState getGameState() {
-        return state;
-    }
 
     @Override
     public synchronized Response handleGameAction(GameAction gameAction) {
         Response response = null;
         switch (gameAction.getType()) {
-            case JOIN_GAME:
-                response = joinGame(gameAction.getSender());
+            case JOIN_ROOM:
+                response = joinRoom(gameAction.getSender());
                 break;
 
-            case LEAVE_GAME:
-                response = leaveGame(gameAction.getSender());
+            case LEAVE_ROOM:
+                response = leaveRoom(gameAction.getSender());
                 break;
 
             case SIT_DOWN:
@@ -62,11 +60,10 @@ public class PokerGameController extends GameController {
                 response = reroll(gameAction.getSender(), ((RerollAction)gameAction).getChosenDice());
                 break;
         }
-
         return response;
     }
 
-    private Response joinGame(String playerName) {
+    private Response joinRoom(String playerName) {
         if (!observers.contains(playerName)) {
             observers.add(playerName);
             return new Response(Response.Type.SUCCESS);
@@ -76,17 +73,21 @@ public class PokerGameController extends GameController {
         }
     }
 
-    private Response leaveGame(String playerName) {
+    private Response leaveRoom(String playerName) {
         if (!observers.contains(playerName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.NO_SUCH_JOINED_OBSERVER.toString());
         }
-        else if (state.isPlayerWithName(playerName)) {
+        else if (state.getPlayers().contains(new Player(playerName, false, settings.getDiceNumber()))) {  // ugly
             return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_IS_IN_GAME.toString());
         }
         else {
             observers.remove(playerName);
 
-            //TODO check if the room is empty, wait some time and ask server for destruction
+            if (isRoomEmpty())
+            {
+                //TODO wait some time
+                server.finishGame(this); // ??
+            }
 
             return new Response(Response.Type.SUCCESS);
         }
@@ -102,13 +103,13 @@ public class PokerGameController extends GameController {
         else if (!observers.contains(playerName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_IS_NOT_OBSERVER.toString());
         }
-        else if (state.isPlayerWithName(playerName)) {
+        else if (state.getPlayers().contains(new Player(playerName, false, settings.getDiceNumber()))) {  // very ugly
             return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_ALREADY_SAT_DOWN.toString());
         }
         else {
             state.addPlayer(new Player(playerName, false, settings.getDiceNumber()));
 
-            if (state.getPlayers().size() == settings.getMaxHumanPlayers()) {
+            if (isGameStartConditionMet()) {
                 startGame();
             }
 
@@ -117,81 +118,77 @@ public class PokerGameController extends GameController {
         }
     }
 
-
     private Response standUp(String playerName) {
-
-        return null;
+        throw new NotImplementedException();
     }
 
     private Response reroll(String playerName, boolean[] chosenDices) {
-
-
-
         nextPlayer();
-        return null;
+        throw new NotImplementedException();
+    }
+
+    public void addPenaltyToPlayer(Player player) {
+        int currentAbsences = numberOfAbsences.get(player);
+        currentAbsences++;
+        if (currentAbsences == settings.getMaxInactiveTurns())
+            standUp(player.getName());
+        else
+            numberOfAbsences.put(player, currentAbsences);
+    }
+
+    private void createBots() {
+        int num = 0;
+        for (Map.Entry<BotLevel, Integer> entry : settings.getBotsNumbers().entrySet()) {
+
+            BotLevel botLevel = entry.getKey();
+            int botsNumber = entry.getValue();
+
+            for (int i = 0; i < botsNumber; i++) {
+                Bot bot = BotFactory.createBot(botLevel, settings.getGameType(), settings.getTimeForMove());
+
+                Player botPlayer = new Player(("bot#" + (++num)), true, settings.getDiceNumber());
+                state.addPlayer(botPlayer);
+
+                bots.put(botPlayer, bot);
+            }
+
+        }
+    }
+
+    private Dice getRandomDice() {
+        Dice dice = new Dice(settings.getDiceNumber());
+        //TODO random
+        return dice;
     }
 
     private void startGame() {
-        state.setGameStarted(true);
+
+        createBots();
+
         state.setCurrentRound(1);
         state.setCurrentPlayer(state.getPlayers().get(0));
+        state.setGameStarted(true);
 
         for (Player player : state.getPlayers()) {
-
+            player.setDice(getRandomDice());
         }
+
         currentTurn = 2;
         server.sendToAll(this, state);
-        Timer timer = new Timer(state.getCurrentPlayer());
-        (new Thread(timer)).start();
+        MoveTimer moveTimer = new MoveTimer(this, settings, state, bots, state.getCurrentPlayer(), currentTurn);
+        (new Thread(moveTimer)).start();
     }
 
     private void nextPlayer() {
 
-
-
-
         server.sendToAll(this, state);
     }
 
-    private class Timer implements Runnable {
-
-        private Player player;
-
-        public Timer(Player player) {
-            this.player = player;
-        }
-
-        @Override
-        public void run() {
-            boolean[] chosenDice;
-            if(player.isBot()) {
-                /* make bot move */
-                Dice dice = player.getDice();
-                List<Dice> otherDices = new ArrayList<Dice>();
-                for (Player p : state.getPlayers()) {
-                    if (p != player) otherDices.add(p.getDice());
-                }
-                chosenDice = new boolean[settings.getDiceNumber()]; // temporary: bot does nothing
-                //    TODO  choosenDice = bot.makemove()
-
-                RerollAction rerollAction = new RerollAction(GameActionType.REROLL, player.getName(), chosenDice);
-                handleGameAction(rerollAction);
-            }
-            else {
-                /* sleep max time, that player can wait and then reroll nothing */
-                int startTurn = currentTurn;
-                try {
-                    sleep(settings.getTimeForMove());
-                } catch (InterruptedException e) { }
-
-                if(currentTurn == startTurn) {
-                    chosenDice = new boolean[settings.getDiceNumber()];
-                    RerollAction rerollAction = new RerollAction(GameActionType.REROLL, player.getName(), chosenDice);
-                    Response response = handleGameAction(rerollAction);
-                    // TODO if SUCCESS increment player absence number
-                }
-            }
-        }
+    private boolean isGameStartConditionMet(){
+        return (state.getPlayers().size() == settings.getMaxPlayers() && !state.isGameStarted());
     }
 
+    private boolean isRoomEmpty() {
+        return (observers.isEmpty());
+    }
 }
