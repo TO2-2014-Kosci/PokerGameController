@@ -7,7 +7,9 @@ public enum ControllerMessage {
     PLAYER_IS_NOT_OBSERVER("Nie możesz usiąść do gry, której nie obserwujesz"),
     NO_EMPTY_PLACES("Nie ma już wolnych miejsc przy tym stole"),
     GAME_ALREADY_STARTED("Nie można usiąść do gry, która się już zaczęła"),
-    PLAYER_IS_IN_GAME("Nie można opuścić gry siedząc przy stole")
+    PLAYER_IS_IN_GAME("Nie można opuścić gry siedząc przy stole"),
+    NO_SUCH_PLAYER("Nie ma takiego gracza"),
+    WRONG_DICE_NUMBER("Niepoprawna liczba kości")
     ;
 
     private final String text;

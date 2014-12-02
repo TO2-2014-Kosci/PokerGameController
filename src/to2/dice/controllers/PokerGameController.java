@@ -10,10 +10,9 @@ import to2.dice.messaging.RerollAction;
 import to2.dice.messaging.Response;
 import to2.dice.server.GameServer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static java.lang.Thread.sleep;
 
 
 public class PokerGameController extends GameController {
@@ -86,6 +85,9 @@ public class PokerGameController extends GameController {
             if (isRoomEmpty())
             {
                 //TODO wait some time
+                            try {
+                                sleep(2);
+                            } catch (InterruptedException e) { }
                 server.finishGame(this); // ??
             }
 
@@ -123,8 +125,32 @@ public class PokerGameController extends GameController {
     }
 
     private Response reroll(String playerName, boolean[] chosenDices) {
-        nextPlayer();
-        throw new NotImplementedException();
+        Player player = null;
+        for (Player p : state.getPlayers()) {
+            if(p.getName() == playerName) player = p;
+        }
+        if (player!=null) {
+            Dice dice = new Dice(settings.getDiceNumber());
+            int[] dices = new int[settings.getDiceNumber()];
+            int[] oldDices = player.getDice().getDice();
+            if(chosenDices.length == oldDices.length) {
+                Random generator = new Random();
+                for(int i =0; i<chosenDices.length; i++ ) {
+                    if(chosenDices[i]) {
+                        dices[i] = generator.nextInt(6)+1;
+                    }
+                    else {
+                        dices[i] = oldDices[i];
+                    }
+                    dice.setDice(dices);
+                    player.setDice(dice);
+                }
+            nextPlayer();
+            return new Response(Response.Type.SUCCESS);
+            }
+            return new Response(Response.Type.FAILURE, ControllerMessage.WRONG_DICE_NUMBER.toString());
+        }
+        return new Response(Response.Type.FAILURE, ControllerMessage.NO_SUCH_PLAYER.toString());
     }
 
     public void addPenaltyToPlayer(Player player) {
@@ -157,7 +183,12 @@ public class PokerGameController extends GameController {
 
     private Dice getRandomDice() {
         Dice dice = new Dice(settings.getDiceNumber());
-        //TODO random
+        int[] dices = new int[settings.getDiceNumber()];
+        Random generator = new Random();
+        for(int i = 0; i < settings.getDiceNumber(); i++) {
+            dices[i] = generator.nextInt(6)+1;
+        }
+        dice.setDice(dices);
         return dice;
     }
 
@@ -180,6 +211,12 @@ public class PokerGameController extends GameController {
     }
 
     private void nextPlayer() {
+        Player newPlayer = null;
+        for (Player p : state.getPlayers()) {
+            if (p == state.getCurrentPlayer()) {
+                // TODO switch Player
+            }
+        }
 
         server.sendToAll(this, state);
     }
