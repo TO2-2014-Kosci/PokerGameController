@@ -118,7 +118,7 @@
     <coordinates>
       <x>560</x>
       <y>7</y>
-      <w>210</w>
+      <w>224</w>
       <h>84</h>
     </coordinates>
     <panel_attributes>Response
@@ -185,7 +185,7 @@
 --
 -chosenDice: boolean[]
 --
-+RerollAction(String sender, boolean[] chosenDice): ctor
++RerollAction(String sender, boolean[] chosenDice)
 +getChosenDice(): boolean[]
 --
 </panel_attributes>
@@ -203,8 +203,8 @@
 GameServer
 --
 --
-+sendToAll(GameController sender, GameState state): void
-+finishGame(GameController sender): void
++sendToAll(GameController sender, GameState state)
++finishGame(GameController sender)
 --
 </panel_attributes>
     <additional_attributes/>
@@ -681,7 +681,7 @@ POKER</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>273</x>
-      <y>728</y>
+      <y>735</y>
       <w>196</w>
       <h>154</h>
     </coordinates>
@@ -706,7 +706,7 @@ POKER</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>56</x>
-      <y>728</y>
+      <y>735</y>
       <w>119</w>
       <h>133</h>
     </coordinates>
@@ -730,7 +730,7 @@ HIGH_CARD
     <id>Relation</id>
     <coordinates>
       <x>168</x>
-      <y>777</y>
+      <y>784</y>
       <w>119</w>
       <h>28</h>
     </coordinates>
@@ -743,10 +743,10 @@ HIGH_CARD
       <x>364</x>
       <y>630</y>
       <w>42</w>
-      <h>112</h>
+      <h>119</h>
     </coordinates>
     <panel_attributes>lt=&lt;.
 &lt;&lt;use&gt;&gt;</panel_attributes>
-    <additional_attributes>10.0;140.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;150.0;10.0;10.0</additional_attributes>
   </element>
 </diagram>
