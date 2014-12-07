@@ -1,0 +1,811 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="13.1">
+  <zoom_level>8</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1288</x>
+      <y>248</y>
+      <w>256</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>GameSettings
+--
+-gameType: GameType
+-diceNumber: int
+-name: String
+-maxHumanPlayers: int
+-timeForMove: int
+-maxInactiveTurns: int
+-roundsToWin: int
+-botsNumbers: Map&lt;BotLevel, Integer&gt;
+--
++GameSettings(...)
++getters
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1112</x>
+      <y>456</y>
+      <w>256</w>
+      <h>136</h>
+    </coordinates>
+    <panel_attributes>GameState
+--
+-players: List&lt;Player&gt;
+-gameStarted = false: boolean
+-currentPlayer = null: Player
+-currentRound = 0: int
+--
++getters and setters
++getPlayersNumber(): int
++addPlayer(Player player): void
++removePlayer(Player player): void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1104</x>
+      <y>672</y>
+      <w>304</w>
+      <h>136</h>
+    </coordinates>
+    <panel_attributes>Player
+--
+-name: String
+-score = 0: int
+-dice: Dice
+-isBot: boolean
+--
++Player(String name, boolean isBot, int diceNumber)
++getters
++setScore(int score)
++setDice(Dice dice)
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>736</x>
+      <y>208</y>
+      <w>424</w>
+      <h>144</h>
+    </coordinates>
+    <panel_attributes>/GameController/
+--
+#server: GameServer
+#settings: GameSettings
+#creator: String
+#state: GameState
+#observers: List&lt;String&gt;
+#bots : Map&lt;Player, Bot&gt;
+--
++GameController(GameServer server, GameSettings settings, String creator)
++getGameInfo(): GameInfo
++handleGameAction(GameAction action): Response
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1480</x>
+      <y>448</y>
+      <w>272</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>GameInfo
+--
+-settings: GameSettings
+-gameStarted: boolean
+-playersNumber: int
+--
++GameInfo(GameSettings settings, GameState state)
++getters
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>608</x>
+      <y>8</y>
+      <w>256</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>Response
+--
++type: ResponseType
++message: String
+--
++Response(ResponseType type)
++Response(ResponseType type, String message)
++isSuccess(): boolean
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1176</x>
+      <y>920</y>
+      <w>152</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>Dice
+--
+-diceNumber: int
+-dice: int[]
+--
++Dice(int diceNumber)
++getValues(): int[]
++setValues(int[] dice)
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>928</x>
+      <y>8</y>
+      <w>296</w>
+      <h>112</h>
+    </coordinates>
+    <panel_attributes>GameAction
+--
+~type: GameActionType
+~sender: String
+--
++GameAction(GameActionType type, String sender)
++getType(): GameActionType
++getSender(): String
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1288</x>
+      <y>136</y>
+      <w>296</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>RerollAction
+--
+-chosenDice: boolean[]
+--
++RerollAction(String sender, boolean[] chosenDice)
++getChosenDice(): boolean[]
+--
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>336</x>
+      <y>280</y>
+      <w>312</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+GameServer
+--
+--
++sendToAll(GameController sender, GameState state)
++finishGame(GameController sender)
+--
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>632</x>
+      <y>504</y>
+      <w>424</w>
+      <h>184</h>
+    </coordinates>
+    <panel_attributes>lw=1
+PokerGameController
+--
+-gameThread: GameThread
+-roomController: RoomController
+-moveTimer: MoveTimer
+--
++PokerGameController(GameServer server, GameSettings settings, String creator)
+-joinRoom(String playerName)
+-leaveRoom(String playerName)
+-sitDown(String playerName)
+-standUp(String playerName)
+-reroll(String playerName, boolean[] chosenDice)
+-gameOver()
+
+bg=light_gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>344</x>
+      <y>208</y>
+      <w>288</w>
+      <h>56</h>
+    </coordinates>
+    <panel_attributes>/Bot/
+--
++makeMove(Dice dice, List&lt;Dice&gt; otherDice): boolean[]
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>64</y>
+      <w>352</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>_BotFactory_
+--
+_+createBot(BotLevel level, GameType gameType, int maxTime): Bot_
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>920</x>
+      <y>344</y>
+      <w>24</w>
+      <h>176</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;200.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>336</x>
+      <y>408</y>
+      <w>504</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>_GameControllerFactory_
+--
+_+createGameControler(GameServer server, GameSettings settings, String creator): GameController_
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>544</x>
+      <y>448</y>
+      <w>104</w>
+      <h>104</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>110.0;110.0;10.0;110.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>640</x>
+      <y>320</y>
+      <w>112</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>m1=1
+m2=0..n</panel_attributes>
+    <additional_attributes>10.0;10.0;120.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1152</x>
+      <y>280</y>
+      <w>152</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;170.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1152</x>
+      <y>320</y>
+      <w>80</w>
+      <h>152</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;80.0;10.0;80.0;170.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1360</x>
+      <y>480</y>
+      <w>136</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;20.0;150.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1536</x>
+      <y>368</y>
+      <w>112</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;120.0;10.0;120.0;100.0</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>1216</x>
+      <y>568</y>
+      <w>40</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>24;24;24;104</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1208</x>
+      <y>800</y>
+      <w>24</w>
+      <h>136</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1184</x>
+      <y>112</y>
+      <w>120</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;90.0;130.0;90.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1064</x>
+      <y>112</y>
+      <w>48</w>
+      <h>112</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;120.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>752</x>
+      <y>96</y>
+      <w>48</w>
+      <h>128</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>408</x>
+      <y>0</y>
+      <w>152</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+ResponseType
+--
+SUCCESS
+FAILURE</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>552</x>
+      <y>32</y>
+      <w>72</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes>10.0;20.0;70.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1320</x>
+      <y>16</y>
+      <w>96</w>
+      <h>104</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+GameActionType
+--
+JOIN_ROOM
+LEAVE_ROOM
+SIT_DOWN
+STAND_UP
+REROLL</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1216</x>
+      <y>24</y>
+      <w>120</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes>130.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1704</x>
+      <y>312</y>
+      <w>80</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+BotLevel
+--
+LOW
+HIGH</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1536</x>
+      <y>344</y>
+      <w>184</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes>10.0;20.0;210.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>256</x>
+      <y>104</y>
+      <w>104</w>
+      <h>152</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>110.0;170.0;10.0;170.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1616</x>
+      <y>256</y>
+      <w>80</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+GameType
+--
+NMUL
+NPLUS
+POKER</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1536</x>
+      <y>280</y>
+      <w>96</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes>10.0;20.0;100.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1320</x>
+      <y>184</y>
+      <w>520</w>
+      <h>792</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;970.0;620.0;970.0;620.0;10.0;330.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>608</x>
+      <y>224</y>
+      <w>144</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>128;24;24;24</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>416</x>
+      <y>864</y>
+      <w>304</w>
+      <h>168</h>
+    </coordinates>
+    <panel_attributes>GameThread
+--
+-diceRoller: DiceRoller
+--
++GameThread(GameServer server, GameSettings settings, 
+  GameState state, MoveTimer timer)
++handleRerollRequest(boolean[] chosenDice)
++removePlayer(Player player)
++timeLimitExceeded()
+-newRound()
+-addPenaltyToPlayer(Player player)
+-addPointToPlayer(Player player)
+-nextPlayer()
+-getWinner(): Player</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>296</x>
+      <y>552</y>
+      <w>256</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>MoveTimer
+--
+-time: int
+--
++MoveTimer(int time, GameThread gameThread)
++start()
++tryStop(): boolean
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>640</x>
+      <y>664</y>
+      <w>40</w>
+      <h>216</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>24;24;24;200</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>528</x>
+      <y>568</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>104;24;24;24</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>152</x>
+      <y>896</y>
+      <w>168</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>DiceRoller
+--
+-diceRoller: SecureRandom
+-diceNumber: int
+--
++DiceRoller(int diceNumber)
++rollSingleDice(): int
++rollDice(): int[]
+ </panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>296</x>
+      <y>928</y>
+      <w>136</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>120;24;24;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>560</x>
+      <y>752</y>
+      <w>80</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Thread
+--
+--
++run()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>504</x>
+      <y>752</y>
+      <w>72</w>
+      <h>128</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>56;24;24;24;24;112</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>152</x>
+      <y>680</y>
+      <w>224</w>
+      <h>176</h>
+    </coordinates>
+    <panel_attributes>_PokerHands_
+--
+--
++getHandType(Dice dice): PokerHandType
++compare(Dice dice1, Dice dice2): int
+-isPoker(Dice dice): boolean
+-isFour(Dice dice): boolean
+-isFull(Dice dice): boolean
+-isLargeStraight(Dice dice): boolean
+-isSmallStraight(Dice dice): boolean
+-isThree(Dice dice): boolean
+-isTwoPairs(Dice dice): boolean
+-isPair(Dice dice): boolean
+-isHighCard(Dice dice): boolean
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>0</x>
+      <y>496</y>
+      <w>136</w>
+      <h>152</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+PokerHandType
+--
+POKER
+FOUR
+FULL
+LARGE_STRAIGHT
+SMALL_STRAIGHT
+THREE
+TWO_PAIRS
+PAIR
+HIGH_CARD
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>56</x>
+      <y>640</y>
+      <w>112</w>
+      <h>128</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes>10.0;10.0;10.0;140.0;120.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>752</y>
+      <w>88</w>
+      <h>128</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;20.0;90.0;20.0;90.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>728</x>
+      <y>760</y>
+      <w>352</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>RoomController
+--
+
+--
++RoomController(GameController controller, GameSettings settings,
+  GameState state, GameThread gameThread)
++addObserver(String playerName)
++removeObserver(String playerName)
++addPlayer(String playerName)
++removePlayer(String playerName)
+-isGameStartConditionMet(): boolean
+-isRoomEmpty(): boolean
+-startGame()
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>952</x>
+      <y>664</y>
+      <w>40</w>
+      <h>112</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>24;24;24;96</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>472</x>
+      <y>632</y>
+      <w>48</w>
+      <h>248</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;use&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;290.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>712</x>
+      <y>912</y>
+      <w>208</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;start&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;90.0;240.0;90.0;240.0;10.0</additional_attributes>
+  </element>
+</diagram>
