@@ -22,7 +22,7 @@ public class PokerGameController extends GameController {
     private List<String> observers = new ArrayList<String>();
     private Map<Player, Integer> numberOfAbsences = new HashMap<Player, Integer>();
     private Map<Player, Bot> bots = new HashMap<Player, Bot>();
-    private int currentTurn=0;
+    private int currentTurn = 0;
 
     public PokerGameController(GameServer server, GameSettings settings, String creator) {
         super(server, settings, creator);
@@ -64,7 +64,7 @@ public class PokerGameController extends GameController {
 
     private Response joinRoom(String playerName) {
         if (!observers.contains(playerName)) {
-            observers.add(playerName);
+            // RoomController
             return new Response(Response.Type.SUCCESS);
         }
         else {
@@ -80,18 +80,9 @@ public class PokerGameController extends GameController {
             return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_IS_IN_GAME.toString());
         }
         else {
-            observers.remove(playerName);
 
-            if (isRoomEmpty())
-            {
-                //TODO wait some time
-                            try {
-                                sleep(2);
-                            } catch (InterruptedException e) { }
-                server.finishGame(this); // ??
-            }
-
-            return new Response(Response.Type.SUCCESS);
+            // RoomController
+//            return new Response(Response.Type.SUCCESS);
         }
     }
 
@@ -109,13 +100,7 @@ public class PokerGameController extends GameController {
             return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_ALREADY_SAT_DOWN.toString());
         }
         else {
-            state.addPlayer(new Player(playerName, false, settings.getDiceNumber()));
-
-            if (isGameStartConditionMet()) {
-                startGame();
-            }
-
-            server.sendToAll(this, state);
+            //RoomController
             return new Response(Response.Type.SUCCESS);
         }
     }
@@ -130,36 +115,11 @@ public class PokerGameController extends GameController {
             if(p.getName() == playerName) player = p;
         }
         if (player!=null) {
-            Dice dice = new Dice(settings.getDiceNumber());
-            int[] dices = new int[settings.getDiceNumber()];
-            int[] oldDices = player.getDice().getDice();
-            if(chosenDices.length == oldDices.length) {
-                Random generator = new Random();
-                for(int i =0; i<chosenDices.length; i++ ) {
-                    if(chosenDices[i]) {
-                        dices[i] = generator.nextInt(6)+1;
-                    }
-                    else {
-                        dices[i] = oldDices[i];
-                    }
-                    dice.setDice(dices);
-                    player.setDice(dice);
-                }
-            nextPlayer();
             return new Response(Response.Type.SUCCESS);
             }
             return new Response(Response.Type.FAILURE, ControllerMessage.WRONG_DICE_NUMBER.toString());
         }
         return new Response(Response.Type.FAILURE, ControllerMessage.NO_SUCH_PLAYER.toString());
-    }
-
-    public void addPenaltyToPlayer(Player player) {
-        int currentAbsences = numberOfAbsences.get(player);
-        currentAbsences++;
-        if (currentAbsences == settings.getMaxInactiveTurns())
-            standUp(player.getName());
-        else
-            numberOfAbsences.put(player, currentAbsences);
     }
 
     private void createBots() {
@@ -179,53 +139,5 @@ public class PokerGameController extends GameController {
             }
 
         }
-    }
-
-    private Dice getRandomDice() {
-        Dice dice = new Dice(settings.getDiceNumber());
-        int[] dices = new int[settings.getDiceNumber()];
-        Random generator = new Random();
-        for(int i = 0; i < settings.getDiceNumber(); i++) {
-            dices[i] = generator.nextInt(6)+1;
-        }
-        dice.setDice(dices);
-        return dice;
-    }
-
-    private void startGame() {
-
-        createBots();
-
-        state.setCurrentRound(1);
-        state.setCurrentPlayer(state.getPlayers().get(0));
-        state.setGameStarted(true);
-
-        for (Player player : state.getPlayers()) {
-            player.setDice(getRandomDice());
-        }
-
-        currentTurn = 2;
-        server.sendToAll(this, state);
-        MoveTimer moveTimer = new MoveTimer(this, settings, state, bots, state.getCurrentPlayer(), currentTurn);
-        (new Thread(moveTimer)).start();
-    }
-
-    private void nextPlayer() {
-        Player newPlayer = null;
-        for (Player p : state.getPlayers()) {
-            if (p == state.getCurrentPlayer()) {
-                // TODO switch Player
-            }
-        }
-
-        server.sendToAll(this, state);
-    }
-
-    private boolean isGameStartConditionMet(){
-        return (state.getPlayers().size() == settings.getMaxPlayers() && !state.isGameStarted());
-    }
-
-    private boolean isRoomEmpty() {
-        return (observers.isEmpty());
     }
 }
