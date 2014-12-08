@@ -1,5 +1,6 @@
 package to2.dice.controllers.poker;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import to2.dice.game.Dice;
 import java.security.SecureRandom;
 
@@ -21,9 +22,14 @@ public class DiceRoller {
         int[] dices = new int[this.diceNumber];
         for(int i = 0; i < this.diceNumber; i++) {
             dices[i] = diceRoller.nextInt(6)+1;
-        }
-        dice.setDice(dices);
-        return dice;
+    }
+
+    public int rollSingleDice() {
+        throw new NotImplementedException();
+    }
+
+    public Dice rollDice() {
+        throw new NotImplementedException();
     }
 
 }
