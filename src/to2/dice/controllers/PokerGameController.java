@@ -1,9 +1,10 @@
 package to2.dice.controllers;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import to2.dice.ai.Bot;
 import to2.dice.ai.BotFactory;
+import to2.dice.controllers.poker.GameThread;
 import to2.dice.controllers.poker.MoveTimer;
+import to2.dice.controllers.poker.RoomController;
 import to2.dice.game.*;
 import to2.dice.messaging.GameAction;
 import to2.dice.messaging.RerollAction;
@@ -17,16 +18,17 @@ import static java.lang.Thread.sleep;
 
 public class PokerGameController extends GameController {
 
-    //TODO synchronize GameState
-
-    private List<String> observers = new ArrayList<String>();
-    private Map<Player, Integer> numberOfAbsences = new HashMap<Player, Integer>();
     private Map<Player, Bot> bots = new HashMap<Player, Bot>();
-    private int currentTurn = 0;
+    private RoomController roomController;
+//  private MoveTimer moveTimer;
+    private GameThread gameThread;
 
     public PokerGameController(GameServer server, GameSettings settings, String creator) {
         super(server, settings, creator);
-        joinRoom(creator);
+
+        roomController = new RoomController(this, settings, state, bots);
+        createBots();
+        roomController.addObserver(creator);
     }
 
     @Override
@@ -62,68 +64,88 @@ public class PokerGameController extends GameController {
         return response;
     }
 
-    private Response joinRoom(String playerName) {
-        if (!observers.contains(playerName)) {
-            // RoomController
-            return new Response(Response.Type.SUCCESS);
-        }
-        else {
+    private Response joinRoom(String senderName) {
+        if (roomController.isObserverWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.OBSERVER_ALREADY_JOINED.toString());
         }
+        else {
+            roomController.addObserver(senderName);
+            return new Response(Response.Type.SUCCESS);
+        }
     }
 
-    private Response leaveRoom(String playerName) {
-        if (!observers.contains(playerName)) {
+    private Response leaveRoom(String senderName) {
+        if (!roomController.isObserverWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.NO_SUCH_JOINED_OBSERVER.toString());
         }
-        else if (state.getPlayers().contains(new Player(playerName, false, settings.getDiceNumber()))) {  // ugly
-            return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_IS_IN_GAME.toString());
-        }
         else {
-
-            // RoomController
-//            return new Response(Response.Type.SUCCESS);
+            roomController.removeObserver(senderName);
+            return new Response(Response.Type.SUCCESS);
         }
     }
 
-    private Response sitDown(String playerName) {
+    private Response sitDown(String senderName) {
         if (state.isGameStarted()) {
             return new Response(Response.Type.FAILURE, ControllerMessage.GAME_ALREADY_STARTED.toString());
         }
-        else if (state.getPlayersNumber() >= settings.getMaxPlayers()) {
+        else if (roomController.isRoomFull()) {
             return new Response(Response.Type.FAILURE, ControllerMessage.NO_EMPTY_PLACES.toString());
         }
-        else if (!observers.contains(playerName)) {
-            return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_IS_NOT_OBSERVER.toString());
+        else if (!roomController.isObserverWithName(senderName)) {
+            return new Response(Response.Type.FAILURE, ControllerMessage.SENDER_IS_NOT_OBSERVER.toString());
         }
-        else if (state.getPlayers().contains(new Player(playerName, false, settings.getDiceNumber()))) {  // very ugly
+        else if (!roomController.isPlayerWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_ALREADY_SAT_DOWN.toString());
         }
         else {
-            //RoomController
+            roomController.addPlayer(senderName);
             return new Response(Response.Type.SUCCESS);
         }
     }
 
-    private Response standUp(String playerName) {
-        throw new NotImplementedException();
-    }
-
-    private Response reroll(String playerName, boolean[] chosenDices) {
-        Player player = null;
-        for (Player p : state.getPlayers()) {
-            if(p.getName() == playerName) player = p;
+    private Response standUp(String senderName) {
+        if (!roomController.isObserverWithName(senderName)) {
+            return new Response(Response.Type.FAILURE, ControllerMessage.SENDER_IS_NOT_OBSERVER.toString());
         }
-        if (player!=null) {
-            return new Response(Response.Type.SUCCESS);
+        else if (!roomController.isPlayerWithName(senderName)) {
+            return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_ALREADY_STAND_UP.toString());
+        }
+        else {
+            if (state.isGameStarted()) {
+                gameThread.removePlayer(senderName);
             }
+            roomController.removePlayer(senderName);
+            return new Response(Response.Type.SUCCESS);
+        }
+    }
+
+    private Response reroll(String senderName, boolean[] chosenDices) {
+        if (!state.isGameStarted()) {
+            return new Response(Response.Type.FAILURE, ControllerMessage.GAME_IS_NOT_STARTED.toString());
+        }
+        else if (chosenDices.length != settings.getDiceNumber()) {
+            return new Response(Response.Type.FAILURE, ControllerMessage.NO_SUCH_PLAYER.toString());
+        }
+        else if (!roomController.isPlayerWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.WRONG_DICE_NUMBER.toString());
         }
-        return new Response(Response.Type.FAILURE, ControllerMessage.NO_SUCH_PLAYER.toString());
+        else if (state.getCurrentPlayer().getName().equals(senderName)) {
+            return new Response(Response.Type.FAILURE, ControllerMessage.OTHER_PLAYERS_TURN.toString());
+        }
+        else {
+//            boolean notTooLate = moveTimer.tryStop();
+//            if (notTooLate) {
+                gameThread.handleRerollRequest(chosenDices);
+                return new Response(Response.Type.SUCCESS);
+//            }
+//            else
+//                return new Response(Response.Type.FAILURE, ControllerMessage.OTHER_PLAYERS_TURN.toString());
+        }
     }
 
     private void createBots() {
-        int num = 0;
+        int botId = 0;
+
         for (Map.Entry<BotLevel, Integer> entry : settings.getBotsNumbers().entrySet()) {
 
             BotLevel botLevel = entry.getKey();
@@ -131,13 +153,9 @@ public class PokerGameController extends GameController {
 
             for (int i = 0; i < botsNumber; i++) {
                 Bot bot = BotFactory.createBot(botLevel, settings.getGameType(), settings.getTimeForMove());
-
-                Player botPlayer = new Player(("bot#" + (++num)), true, settings.getDiceNumber());
-                state.addPlayer(botPlayer);
-
-                bots.put(botPlayer, bot);
+                String botName = "bot#" + botId++;
+                roomController.addBot(botName, bot);
             }
-
         }
     }
 }
