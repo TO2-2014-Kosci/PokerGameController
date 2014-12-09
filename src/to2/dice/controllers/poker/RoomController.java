@@ -62,8 +62,8 @@ public class RoomController {
 
     public void addBot(String botName, Bot bot) {
         Player botPlayer = new Player((botName), true, settings.getDiceNumber());
-        state.addPlayer(botPlayer);
         bots.put(botPlayer, bot);
+        state.addPlayer(botPlayer);
     }
 
     public boolean isObserverWithName(String name) {
