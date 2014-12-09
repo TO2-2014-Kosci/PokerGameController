@@ -56,8 +56,8 @@ public class RoomController {
     }
 
     public void removePlayer(String playerName) {
-        //TODO implement
-        throw new NotImplementedException();
+        state.removePlayer(new Player(playerName, false, settings.getDiceNumber()));
+
     }
 
     public void addBot(String botName, Bot bot) {

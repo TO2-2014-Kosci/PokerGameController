@@ -79,29 +79,76 @@ public class PokerHandsTest {
         assertFalse(PokerHands.isPair(new int[]{1, 2, 3, 4, 5}));
         assertFalse(PokerHands.isPair(new int[]{2, 3, 2, 1, 3}));
     }
-
     @org.junit.Test
     public void testGetHandType() throws Exception {
         Dice dice1 = new Dice(5);
-
         dice1.setDice(new int[]{1, 2, 3, 5, 6});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.HIGH_CARD);
-
         dice1.setDice(new int[]{2, 3, 2, 5, 6});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.PAIR);
-
         dice1.setDice(new int[]{1, 2, 2, 6, 2});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.THREE);
-
         dice1.setDice(new int[]{1, 2, 3, 4, 5});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.SMALL_STRAIGHT);
-
+        dice1.setDice(new int[]{3, 4, 3, 4, 3});
+        assertEquals(PokerHands.getHandType(dice1), PokerHandType.FULL);
         dice1.setDice(new int[]{3, 4, 3, 3, 3});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.FOUR);
-
         dice1.setDice(new int[]{4, 4, 4, 4, 4});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.POKER);
+    }
+    @org.junit.Test
+    public void testCompare() throws Exception {
+        Dice dice1 = new Dice(5);
+        Dice dice2 = new Dice(5);
+
+        dice1.setDice(new int[]{1, 2, 4, 5, 6});
+        dice2.setDice(new int[]{1, 2, 3, 5, 6});
+        assertEquals(PokerHands.compare(dice1, dice2), 1);
+        dice1.setDice(new int[]{1, 2, 3, 5, 6});
+        dice2.setDice(new int[]{1, 2, 4, 5, 6});
+        assertEquals(PokerHands.compare(dice1, dice2), -1);
+
+        dice1.setDice(new int[]{1, 2, 2, 5, 6});
+        dice2.setDice(new int[]{1, 2, 2, 5, 6});
+        assertEquals(PokerHands.compare(dice1, dice2), 0);
+        dice2.setDice(new int[]{3, 2, 2, 5, 6});
+        assertEquals(PokerHands.compare(dice1, dice2), -1);
+        dice1.setDice(new int[]{3, 2, 2, 5, 6});
+        dice2.setDice(new int[]{1, 2, 2, 5, 6});
+        assertEquals(PokerHands.compare(dice1, dice2), 1);
+        dice2.setDice(new int[]{1, 3, 3, 5, 6});
+        assertEquals(PokerHands.compare(dice1, dice2), -1);
+
+        dice1.setDice(new int[]{1, 3, 3, 3, 6});
+        dice2.setDice(new int[]{1, 2, 3, 5, 6});
+        assertEquals(PokerHands.compare(dice1, dice2), 1);
+        dice2.setDice(new int[]{5, 3, 2, 5, 6});
+        assertEquals(PokerHands.compare(dice1, dice2), 1);
+        dice2.setDice(new int[]{1, 3, 2, 3, 3});
+        assertEquals(PokerHands.compare(dice1, dice2), 1);
+        dice2.setDice(new int[]{3, 6, 3, 3, 5});
+        assertEquals(PokerHands.compare(dice1, dice2), -1);
+        dice2.setDice(new int[]{1, 6, 3, 3, 3});
+        assertEquals(PokerHands.compare(dice1, dice2), 0);
+        dice2.setDice(new int[]{5, 5, 1, 2, 5});
+        assertEquals(PokerHands.compare(dice1, dice2), -1);
+        dice2.setDice(new int[]{2, 3, 2, 3, 2});
+        assertEquals(PokerHands.compare(dice1, dice2), -1);
+        dice2.setDice(new int[]{1, 2, 1, 1, 1});
+        assertEquals(PokerHands.compare(dice1, dice2), -1);
+
+        dice1.setDice(new int[]{3, 1, 3, 3, 3});
+        dice2.setDice(new int[]{1, 2, 1, 1, 6});
+        assertEquals(PokerHands.compare(dice1, dice2), 1);
+        dice2.setDice(new int[]{1, 2, 1, 1, 1});
+        assertEquals(PokerHands.compare(dice1, dice2), 1);
+        dice2.setDice(new int[]{1, 1, 1, 1, 1});
+        assertEquals(PokerHands.compare(dice1, dice2), -1);
+        dice2.setDice(new int[]{4, 4, 4, 6, 4});
+        assertEquals(PokerHands.compare(dice1, dice2), -1);
 
 
     }
+
 }
