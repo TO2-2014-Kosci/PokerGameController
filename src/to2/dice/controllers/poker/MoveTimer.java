@@ -1,5 +1,6 @@
 package to2.dice.controllers.poker;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import to2.dice.ai.Bot;
 import to2.dice.controllers.GameController;
 import to2.dice.controllers.PokerGameController;
@@ -13,26 +14,28 @@ import java.util.Map;
 
 import static java.lang.Thread.sleep;
 
-public class MoveTimer implements Runnable {
-    private GameController controller;
-    private Player player;
-    private GameState state;
-    private int currentTurn;
-    private GameSettings settings;
-    private Map<Player, Bot> bots;
+public class MoveTimer extends Thread {
 
-    public MoveTimer(GameController controller, GameSettings settings, GameState state, Map<Player, Bot> bots, Player player, int currentTurn) {
-        this.controller = controller;
-        this.settings = settings;
-        this.bots = bots;
-        this.player = player;
-        this.state = state;
-        this.currentTurn = currentTurn;
+    private int time;
+    private GameThread gameThread;
+
+    public MoveTimer(int time, GameThread gameThread) {
+        this.time = time;
+        this.gameThread = gameThread;
+    }
+
+
+    public void start() {
+        throw new NotImplementedException();
+    }
+
+    public boolean tryStop() {
+        throw new NotImplementedException();
     }
 
     @Override
     public void run() {
-        boolean[] chosenDice;
+       /* boolean[] chosenDice;
 
         if (player.isBot()) {
             Dice dice = player.getDice();
@@ -49,7 +52,7 @@ public class MoveTimer implements Runnable {
             RerollAction rerollAction = new RerollAction(player.getName(), chosenDice);
             controller.handleGameAction(rerollAction);
         } else {
-            /* sleep max time, that player can wait and then reroll nothing */
+            // sleep max time, that player can wait and then reroll nothing
             int startTurn = currentTurn;
             try {
                 sleep(settings.getTimeForMove());
@@ -63,6 +66,6 @@ public class MoveTimer implements Runnable {
                 if (response.type == Response.Type.SUCCESS)
                     ((PokerGameController) controller).addPenaltyToPlayer(player);
             }
-        }
+        */
     }
 }
