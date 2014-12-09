@@ -146,7 +146,7 @@ public class PokerGameController extends GameController {
             int botsNumber = entry.getValue();
 
             for (int i = 0; i < botsNumber; i++) {
-                Bot bot = BotFactory.createBot(botLevel, settings.getGameType(), settings.getTimeForMove());
+                Bot bot = BotFactory.createBot(settings.getGameType(), botLevel, settings.getTimeForMove());
                 String botName = "bot#" + botId++;
                 roomController.addBot(botName, bot);
             }

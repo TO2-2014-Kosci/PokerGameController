@@ -1,9 +1,10 @@
 package to2.dice.controllers.poker;
 
+import to2.dice.game.Dice;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import to2.dice.game.Dice;
 
 public class PokerHandsTest {
 
@@ -82,18 +83,27 @@ public class PokerHandsTest {
     @org.junit.Test
     public void testGetHandType() throws Exception {
         Dice dice1 = new Dice(5);
+
         dice1.setDice(new int[]{1, 2, 3, 5, 6});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.HIGH_CARD);
+
         dice1.setDice(new int[]{2, 3, 2, 5, 6});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.PAIR);
+
         dice1.setDice(new int[]{1, 2, 2, 6, 2});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.THREE);
+
         dice1.setDice(new int[]{1, 2, 3, 4, 5});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.SMALL_STRAIGHT);
+<<<<<<< HEAD
         dice1.setDice(new int[]{3, 4, 3, 4, 3});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.FULL);
+=======
+
+>>>>>>> 1920b159caf57ac0528f73ec0559ea9192848ee9
         dice1.setDice(new int[]{3, 4, 3, 3, 3});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.FOUR);
+
         dice1.setDice(new int[]{4, 4, 4, 4, 4});
         assertEquals(PokerHands.getHandType(dice1), PokerHandType.POKER);
     }
