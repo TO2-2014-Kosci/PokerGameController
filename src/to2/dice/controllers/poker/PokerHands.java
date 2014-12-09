@@ -20,22 +20,6 @@ public class PokerHands {
         return PokerHandType.HIGH_CARD;
     }
 
-    public static int compare(Dice dice1, Dice dice2) {
-        PokerHandType type1 = getHandType(dice1);
-        PokerHandType type2 = getHandType(dice2);
-        if(type1.getValue()>type2.getValue())
-            return 1;
-        else {
-            if(type1.getValue()<type2.getValue())
-                return -1;
-            else {
-                return compareSameFigures(dice1.getDice(), dice2.getDice(), type1);
-            }
-        }
-    }
-
-
-
     private static void sort(int[] dice) {
         for (int i = 0; i < dice.length; i++) {
             int min = i;
@@ -141,22 +125,49 @@ public class PokerHands {
                 || dice[2] == dice[3] || dice[3] == dice[4] );
     }
 
-    public static int compareOnCardPriorities(ArrayList<Integer> d1, ArrayList<Integer> d2) {     //tak, wiem, przekombinowałem, mogły być tablice :)
-        int i = d1.size()-1;
-        while(i>=0) {
-            if(d1.get(i)>d2.get(i)) return 1;
-            if(d1.get(i)<d2.get(i)) return -1;
-            i--;
+//    public static int compareOnCardPriorities(ArrayList<Integer> d1, ArrayList<Integer> d2) {     //tak, wiem, przekombinowałem, mogły być tablice :)
+//        int i = d1.size()-1;
+//        while(i>=0) {
+//            if(d1.get(i)>d2.get(i)) return 1;
+//            if(d1.get(i)<d2.get(i)) return -1;
+//            i--;
+//        }
+//        return 0;
+//    }
+
+    public static int compare(Dice dice1, Dice dice2) {
+        PokerHandType type1 = getHandType(dice1);
+        PokerHandType type2 = getHandType(dice2);
+        if(type1.getValue()>type2.getValue())
+            return 1;
+        else {
+            if(type1.getValue()<type2.getValue())
+                return -1;
+            else {
+                return compareSameFigures(dice1.getDice(), dice2.getDice(), type1);
+            }
+        }
+    }
+
+    public static int compareOnCardPriorities(int[] d1, int[] d2) {
+        int i = d1.length-1;
+        int j=0;
+        while(j<=i) {
+            if(d1[j]>d2[j]) return 1;
+            if(d1[j]<d2[j]) return -1;
+            j++;
         }
         return 0;
     }
 
     public static int compareSameFigures(int[] dices1, int[] dices2, PokerHandType type) {
+        sort(dices1);
+        sort(dices2);
         int d1a, d1b, d1c, d1d, d2a, d2b, d2c, d2d;
         switch (type) {
             case HIGH_CARD:
-                return compareOnCardPriorities(new ArrayList<Integer>(Arrays.asList(dices1[4], dices1[3], dices1[2], dices1[1], dices1[0])),
-                        new ArrayList<Integer>(Arrays.asList(dices2[4], dices2[3], dices2[2], dices2[1], dices2[0])));
+                return compareOnCardPriorities(new int[] {dices1[4], dices1[3], dices1[2], dices1[1], dices1[0]},
+                        new int[] {dices2[4], dices2[3], dices2[2], dices2[1], dices2[0]});
 
             case PAIR:
                 if(dices1[4]==dices1[3]) {
@@ -215,8 +226,7 @@ public class PokerHands {
                         }
                     }
                 }
-                return compareOnCardPriorities(new ArrayList<Integer>(Arrays.asList(d1a, d1b, d1c, d1d)),
-                        new ArrayList<Integer>(Arrays.asList(d2a, d2b, d2c, d2d)));
+                return compareOnCardPriorities(new int[] {d1a, d1b, d1c, d1d}, new int[] {d2a, d2b, d2c, d2d});
 
             case TWO_PAIRS:
                 if((dices1[4]==dices1[3])&&(dices1[2]==dices1[1])) {
@@ -253,17 +263,16 @@ public class PokerHands {
                         d2c = dices2[4];
                     }
                 }
-                return compareOnCardPriorities(new ArrayList<Integer>(Arrays.asList(d1a, d1b, d1c)),
-                        new ArrayList<Integer>(Arrays.asList(d2a, d2b, d2c)));
+                return compareOnCardPriorities(new int[] {d1a, d1b, d1c}, new int[] {d2a, d2b, d2c});
 
             case THREE:
-                if((dices1[0]&dices1[1]&dices1[2])==dices1[0]) {
+                if((dices1[0]==dices1[1])&&(dices1[1]==dices1[2])) {
                     d1a = dices1[0];
                     d1b = dices1[4];
                     d1c = dices1[3];
                 }
                 else {
-                    if((dices1[1]&dices1[2]&dices1[3])==dices1[1]) {
+                    if((dices1[1]==dices1[2])&&(dices1[2]==dices1[3])) {
                         d1a = dices1[1];
                         d1b = dices1[4];
                         d1c = dices1[0];
@@ -274,13 +283,13 @@ public class PokerHands {
                         d1c = dices1[0];
                     }
                 }
-                if((dices2[0]&dices2[1]&dices2[2])==dices2[0]) {
+                if((dices2[0]==dices2[1])&&(dices2[1]==dices2[2])) {
                     d2a = dices2[0];
                     d2b = dices2[4];
                     d2c = dices2[3];
                 }
                 else {
-                    if((dices2[1]&dices2[2]&dices2[3])==dices2[1]) {
+                    if((dices2[1]==dices2[2])&&(dices2[2]==dices2[3])) {
                         d2a = dices2[1];
                         d2b = dices2[4];
                         d2c = dices2[0];
@@ -291,8 +300,7 @@ public class PokerHands {
                         d2c = dices2[0];
                     }
                 }
-                return compareOnCardPriorities(new ArrayList<Integer>(Arrays.asList(d1a, d1b, d1c)),
-                        new ArrayList<Integer>(Arrays.asList(d2a, d2b, d2c)));
+                return compareOnCardPriorities(new int[] {d1a, d1b, d1c}, new int[] {d2a, d2b, d2c});
 
             case SMALL_STRAIGHT:
                 return 0;
@@ -301,7 +309,7 @@ public class PokerHands {
                 return 0;
 
             case FULL:
-                if((dices1[0]&dices1[1]&dices1[2])==dices1[0]) {
+                if((dices1[0]==dices1[1])&&(dices1[1]==dices1[2])) {
                     d1a = dices1[0];
                     d1b = dices1[4];
                 }
@@ -309,7 +317,7 @@ public class PokerHands {
                     d1a = dices1[4];
                     d1b = dices1[0];
                 }
-                if((dices2[0]&dices2[1]&dices2[2])==dices2[0]) {
+                if((dices2[0]==dices2[1])&&(dices2[1]==dices2[2])) {
                     d2a = dices2[0];
                     d2b = dices2[4];
                 }
@@ -317,8 +325,7 @@ public class PokerHands {
                     d2a = dices2[4];
                     d2b = dices2[0];
                 }
-                return compareOnCardPriorities(new ArrayList<Integer>(Arrays.asList(d1a, d1b)),
-                        new ArrayList<Integer>(Arrays.asList(d2a, d2b)));
+                return compareOnCardPriorities(new int[] {d1a, d1b}, new int[] {d2a, d2b});
 
             case FOUR:
                 if(dices1[0]==dices1[1]) {
@@ -337,8 +344,7 @@ public class PokerHands {
                     d2a = dices2[4];
                     d2b = dices2[0];
                 }
-                return compareOnCardPriorities(new ArrayList<Integer>(Arrays.asList(d1a, d1b)),
-                        new ArrayList<Integer>(Arrays.asList(d2a, d2b)));
+                return compareOnCardPriorities(new int[] {d1a, d1b}, new int[] {d2a, d2b});
 
             case POKER:
                 if(dices1[0]>dices2[0])
