@@ -1,26 +1,33 @@
 package to2.dice.controllers.poker;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import to2.dice.ai.Bot;
+import to2.dice.controllers.GameController;
 import to2.dice.controllers.PokerGameController;
 import to2.dice.game.GameSettings;
 import to2.dice.game.GameState;
 import to2.dice.game.Player;
+import to2.dice.server.GameServer;
 
+import java.io.NotActiveException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class RoomController {
 
-    private final PokerGameController pokerGameController;
-    private GameThread gameThread;
+    private GameServer server;
+    private PokerGameController controller;
+    private final GameThread gameThread;
     private final GameSettings settings;
     private final GameState state;
     private List<String> observers = new ArrayList<String>();
     private Map<Player, Bot> bots;
+    private final int ROOM_INACTIVITY_TIME = 5000;
 
-    public RoomController(PokerGameController pokerGameController, GameThread gameThread, GameSettings settings, GameState state, Map<Player, Bot> bots) {
-        this.pokerGameController = pokerGameController;
+    public RoomController(GameServer server, PokerGameController controller, GameThread gameThread, GameSettings settings, GameState state, Map<Player, Bot> bots) {
+        this.server = server;
+        this.controller = controller;
         this.gameThread = gameThread;
         this.settings = settings;
         this.state = state;
@@ -28,8 +35,39 @@ public class RoomController {
     }
 
 
-    public void addObserver(String playerName) {
-        observers.add(playerName);
+    public void addObserver(String observerName) {
+        observers.add(observerName);
+    }
+
+    public void removeObserver(String observerName) {
+        observers.remove(observerName);
+        if (isRoomEmpty()) {
+            //TODO waiting some time and interrupt when addObserver
+           server.finishGame(controller);
+        }
+    }
+
+    public void addPlayer(String playerName) {
+        state.addPlayer(new Player(playerName, false, settings.getDiceNumber()));
+
+        if (isGameStartConditionMet()) {
+            gameThread.start();
+        }
+    }
+
+    public void removePlayer(String playerName) {
+        //TODO implement
+        throw new NotImplementedException();
+    }
+
+    public void addBot(String botName, Bot bot) {
+        Player botPlayer = new Player((botName), true, settings.getDiceNumber());
+        state.addPlayer(botPlayer);
+        bots.put(botPlayer, bot);
+    }
+
+    public boolean isObserverWithName(String name) {
+        return observers.contains(name);
     }
 
     public boolean isPlayerWithName(String name) {
@@ -41,48 +79,19 @@ public class RoomController {
         return false;
     }
 
-    public void removeObserver(String observerName) {
-        observers.remove(observerName);
-//
-//            if (isRoomEmpty())
-//            {
-//                TODO wait some time
-//                            try {
-//                                sleep(2);
-//                            } catch (InterruptedException e) { }
-//                server.finishGame(this); // ??
-//            }
-    }
-
-    public void addPlayer(String playerName) {
-        state.addPlayer(new Player(playerName, false, settings.getDiceNumber()));
-
-        if (isGameStartConditionMet()) {
-            gameThread.start();
-        }
-    }
-
-    public void addBot(String botName, Bot bot) {
-        Player botPlayer = new Player((botName), true, settings.getDiceNumber());
-        state.addPlayer(botPlayer);
-        bots.put(botPlayer, bot);
-    }
-
-    private boolean isGameStartConditionMet(){
-        return (state.getPlayers().size() == settings.getMaxPlayers() && !state.isGameStarted());
+    public boolean isRoomFull() {
+        return (state.getPlayers().size() == settings.getMaxPlayers());
     }
 
     private boolean isRoomEmpty() {
         return (observers.isEmpty());
     }
 
-    public boolean isRoomFull() {return (state.getPlayers().size() == settings.getMaxPlayers());}
-
-    public boolean isObserverWithName(String name) {
-        return observers.contains(name);
+    private boolean isGameStartConditionMet(){
+        return (state.getPlayers().size() == settings.getMaxPlayers() && !state.isGameStarted());
     }
 
-    public void removePlayer(String playerName) {
-
+    public boolean isGameStarted() {
+        return (state.isGameStarted());
     }
 }

@@ -20,22 +20,22 @@ public class PokerGameController extends GameController {
 
     private Map<Player, Bot> bots = new HashMap<Player, Bot>();
     private RoomController roomController;
-//  private MoveTimer moveTimer;
+//    private MoveTimer moveTimer;
     private GameThread gameThread;
 
     public PokerGameController(GameServer server, GameSettings settings, String creator) {
         super(server, settings, creator);
 
-        roomController = new RoomController(this, settings, state, bots);
-        createBots();
-        roomController.addObserver(creator);
+        gameThread = new GameThread(server, this, settings, state, bots);
+        roomController = new RoomController(server, this, gameThread, settings, state, bots);
+
+        initializeRoom(creator);
     }
 
     @Override
     public GameInfo getGameInfo() {
         return new GameInfo(settings, state);
     }
-
 
     @Override
     public synchronized Response handleGameAction(GameAction gameAction) {
@@ -58,17 +58,17 @@ public class PokerGameController extends GameController {
                 break;
 
             case REROLL:
-                response = reroll(gameAction.getSender(), ((RerollAction)gameAction).getChosenDice());
+                response = reroll(gameAction.getSender(), ((RerollAction) gameAction).getChosenDice());
                 break;
         }
         return response;
     }
 
+
     private Response joinRoom(String senderName) {
         if (roomController.isObserverWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.OBSERVER_ALREADY_JOINED.toString());
-        }
-        else {
+        } else {
             roomController.addObserver(senderName);
             return new Response(Response.Type.SUCCESS);
         }
@@ -77,27 +77,22 @@ public class PokerGameController extends GameController {
     private Response leaveRoom(String senderName) {
         if (!roomController.isObserverWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.NO_SUCH_JOINED_OBSERVER.toString());
-        }
-        else {
+        } else {
             roomController.removeObserver(senderName);
             return new Response(Response.Type.SUCCESS);
         }
     }
 
     private Response sitDown(String senderName) {
-        if (state.isGameStarted()) {
+        if (roomController.isGameStarted()) {
             return new Response(Response.Type.FAILURE, ControllerMessage.GAME_ALREADY_STARTED.toString());
-        }
-        else if (roomController.isRoomFull()) {
+        } else if (roomController.isRoomFull()) {
             return new Response(Response.Type.FAILURE, ControllerMessage.NO_EMPTY_PLACES.toString());
-        }
-        else if (!roomController.isObserverWithName(senderName)) {
+        } else if (!roomController.isObserverWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.SENDER_IS_NOT_OBSERVER.toString());
-        }
-        else if (!roomController.isPlayerWithName(senderName)) {
+        } else if (!roomController.isPlayerWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_ALREADY_SAT_DOWN.toString());
-        }
-        else {
+        } else {
             roomController.addPlayer(senderName);
             return new Response(Response.Type.SUCCESS);
         }
@@ -106,12 +101,10 @@ public class PokerGameController extends GameController {
     private Response standUp(String senderName) {
         if (!roomController.isObserverWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.SENDER_IS_NOT_OBSERVER.toString());
-        }
-        else if (!roomController.isPlayerWithName(senderName)) {
+        } else if (!roomController.isPlayerWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.PLAYER_ALREADY_STAND_UP.toString());
-        }
-        else {
-            if (state.isGameStarted()) {
+        } else {
+            if (roomController.isGameStarted()) {
                 gameThread.removePlayer(senderName);
             }
             roomController.removePlayer(senderName);
@@ -122,25 +115,26 @@ public class PokerGameController extends GameController {
     private Response reroll(String senderName, boolean[] chosenDices) {
         if (!state.isGameStarted()) {
             return new Response(Response.Type.FAILURE, ControllerMessage.GAME_IS_NOT_STARTED.toString());
-        }
-        else if (chosenDices.length != settings.getDiceNumber()) {
+        } else if (chosenDices.length != settings.getDiceNumber()) {
             return new Response(Response.Type.FAILURE, ControllerMessage.NO_SUCH_PLAYER.toString());
-        }
-        else if (!roomController.isPlayerWithName(senderName)) {
+        } else if (!roomController.isPlayerWithName(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.WRONG_DICE_NUMBER.toString());
-        }
-        else if (state.getCurrentPlayer().getName().equals(senderName)) {
+        } else if (state.getCurrentPlayer().getName().equals(senderName)) {
             return new Response(Response.Type.FAILURE, ControllerMessage.OTHER_PLAYERS_TURN.toString());
+        } else {
+            /* boolean notTooLate = moveTimer.tryStop();
+            if (notTooLate) { */
+            gameThread.handleRerollRequest(chosenDices);
+            return new Response(Response.Type.SUCCESS);
+            /*  }
+            else
+                return new Response(Response.Type.FAILURE, ControllerMessage.OTHER_PLAYERS_TURN.toString()); */
         }
-        else {
-//            boolean notTooLate = moveTimer.tryStop();
-//            if (notTooLate) {
-                gameThread.handleRerollRequest(chosenDices);
-                return new Response(Response.Type.SUCCESS);
-//            }
-//            else
-//                return new Response(Response.Type.FAILURE, ControllerMessage.OTHER_PLAYERS_TURN.toString());
-        }
+    }
+
+    private void initializeRoom(String creator) {
+        createBots();
+        roomController.addObserver(creator);
     }
 
     private void createBots() {
