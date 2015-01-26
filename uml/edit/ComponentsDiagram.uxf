@@ -17,24 +17,12 @@ PokerGameController</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>423</x>
-      <y>207</y>
-      <w>126</w>
-      <h>90</h>
-    </coordinates>
-    <panel_attributes>lt=[v]-(
-GameController</panel_attributes>
-    <additional_attributes>20.0;80.0;20.0;20.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>432</x>
       <y>135</y>
-      <w>27</w>
+      <w>45</w>
       <h>90</h>
     </coordinates>
-    <panel_attributes>lt=()-[v]</panel_attributes>
-    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+    <panel_attributes>lt=)-[v]</panel_attributes>
+    <additional_attributes>20.0;70.0;20.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLGeneric</id>
@@ -51,26 +39,26 @@ Server</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>567</x>
-      <y>216</y>
-      <w>27</w>
-      <h>81</h>
+      <x>432</x>
+      <y>207</y>
+      <w>117</w>
+      <h>90</h>
     </coordinates>
-    <panel_attributes>lt=()-[^]
-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
+    <panel_attributes>lt=()-[v]
+GameController</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;80.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>558</x>
-      <y>135</y>
-      <w>108</w>
-      <h>99</h>
+      <y>207</y>
+      <w>45</w>
+      <h>90</h>
     </coordinates>
     <panel_attributes>lt=[^]-(
-GameServer</panel_attributes>
-    <additional_attributes>20.0;10.0;20.0;80.0</additional_attributes>
+</panel_attributes>
+    <additional_attributes>20.0;80.0;20.0;20.0</additional_attributes>
   </element>
   <element>
     <id>UMLGeneric</id>
@@ -129,5 +117,17 @@ BotFactory</panel_attributes>
     <panel_attributes>lt=()-[v]
 Bot</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>567</x>
+      <y>135</y>
+      <w>99</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=()-[^]
+GameServer</panel_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
   </element>
 </diagram>
